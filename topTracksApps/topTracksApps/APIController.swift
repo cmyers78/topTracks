@@ -13,11 +13,10 @@ class APIController: NSObject {
     // create a session constant
     let session = NSURLSession.sharedSession()
     
-    func fetchAlbum(artistID :String) {
+    func fetchRelatedArtists(artistID : String) {
         
-        let urlString = "https://api.spotify.com/v1/artists/\(artistID)/albums"
+        let urlString = "https://api.spotify.com/v1/artists/\(artistID)/related-artists"
         
-        // 2. create url
         if let url = NSURL(string: urlString) {
             
             // 3. Create a Data Task for pulling the data from the URL
@@ -33,6 +32,53 @@ class APIController: NSObject {
                 }
                 
                 // 5. Parse the JSON
+                
+                if let jsonDictionary = self.parseJSON(data) {
+                    
+                    if let artistsArray = jsonDictionary["artists"] as? JSONArray {
+                        
+                        for artistsDict in artistsArray {
+                            
+                            let relatedArtist = Artist(dict: artistsDict)
+                            print(relatedArtist.name)
+                            print(relatedArtist.artistID)
+                            
+                            
+                            
+                            
+                        }
+                    } else {
+                        print("I could not parse the artists array")
+                    }
+                    
+                } else {
+                    print("I could no parse the jsonDictionary")
+                }
+                
+            })
+            task.resume()
+        }
+    }
+    
+    func fetchAlbum(artistID :String) {
+        
+        let urlString = "https://api.spotify.com/v1/artists/\(artistID)/albums"
+        
+        // 2. create url
+        if let url = NSURL(string: urlString) {
+            
+            // 3. Create a Data Task for pulling the data from the URL
+            
+            let task = session.dataTaskWithURL(url, completionHandler: {
+                (data, response, error) in
+                
+                // Check if there is an error
+                if error != nil {
+                    print(error?.localizedDescription)
+                    return
+                }
+                // 5. Parse the JSON
+                
                 if let jsonDictionary = self.parseJSON(data) {
                     
                     if let itemsArray = jsonDictionary["items"] as? JSONArray {
@@ -44,8 +90,6 @@ class APIController: NSObject {
                             print(theAlbum.albumID)
                             
                             DataStore.sharedInstance.addAlbum(theAlbum)
-                            
-                            
                         }
                     } else {
                         print("I could not parse the items Array")
@@ -53,11 +97,9 @@ class APIController: NSObject {
                 } else {
                     print("I could not parse the jsonDictionary")
                 }
-                
             })
             task.resume()
         }
-        
     }
 
     func fetchTopTracks(artistID : String) {

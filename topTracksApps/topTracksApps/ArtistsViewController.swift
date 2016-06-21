@@ -12,13 +12,11 @@ class ArtistsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     let apiController = APIController()
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        self.apiController.fetchTopTracks("3vDpQbGnzRbRVirXlfQagB")
+        self.apiController.fetchAlbum("3vDpQbGnzRbRVirXlfQagB")
     }
 
 
