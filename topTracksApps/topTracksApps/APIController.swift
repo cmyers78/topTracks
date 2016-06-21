@@ -12,6 +12,53 @@ class APIController: NSObject {
     
     // create a session constant
     let session = NSURLSession.sharedSession()
+    
+    func fetchAlbum(artistID :String) {
+        
+        let urlString = "https://api.spotify.com/v1/artists/\(artistID)/albums"
+        
+        // 2. create url
+        if let url = NSURL(string: urlString) {
+            
+            // 3. Create a Data Task for pulling the data from the URL
+            
+            let task = session.dataTaskWithURL(url, completionHandler: {
+                (data, response, error) in
+                
+                // Check if there is an error
+                
+                if error != nil {
+                    print(error?.localizedDescription)
+                    return
+                }
+                
+                // 5. Parse the JSON
+                if let jsonDictionary = self.parseJSON(data) {
+                    
+                    if let itemsArray = jsonDictionary["items"] as? JSONArray {
+                        
+                        for itemsDict in itemsArray {
+                            
+                            let theAlbum = Album(dict: itemsDict)
+                            print(theAlbum.albumName)
+                            print(theAlbum.albumID)
+                            
+                            DataStore.sharedInstance.addAlbum(theAlbum)
+                            
+                            
+                        }
+                    } else {
+                        print("I could not parse the items Array")
+                    }
+                } else {
+                    print("I could not parse the jsonDictionary")
+                }
+                
+            })
+            task.resume()
+        }
+        
+    }
 
     func fetchTopTracks(artistID : String) {
         // 1. Put URLString from web
@@ -57,7 +104,6 @@ class APIController: NSObject {
             task.resume()
         }
 }
-    
     
     // Fetch the Artists from the Web API
     func fetchArtist(query : String) {
